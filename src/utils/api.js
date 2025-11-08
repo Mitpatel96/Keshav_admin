@@ -2,7 +2,7 @@
 
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = 'https://dev.api.keshavtraders.com.au/api'
 
 // Create axios instance
 const axiosInstance = axios.create({
