@@ -777,16 +777,35 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
     try {
       setLoading(true)
       setError('')
-      await transferInventoryToVendorAPI({
+      
+      const skuId = inventory.sku?._id || inventory.sku
+      if (!skuId) {
+        setError('SKU ID not found for this inventory item')
+        setLoading(false)
+        return
+      }
+      
+      const response = await transferInventoryToVendorAPI({
         vendorId: selectedVendor,
         transfers: [
           {
-            inventoryId: inventory._id,
+            skuId: skuId,
             quantity: parseInt(quantity),
           },
         ],
       })
-      alert('Inventory transferred successfully!')
+      
+      // Handle response with results
+      if (response?.results && response.results.length > 0) {
+        const successCount = response.results.filter(r => r.status === 'success').length
+        if (successCount > 0) {
+          alert(`Inventory transfer initiated successfully! ${successCount} transfer(s) pending.`)
+        } else {
+          alert('Transfer initiated but some items failed. Please check the details.')
+        }
+      } else {
+        alert('Inventory transferred successfully!')
+      }
       onClose()
     } catch (err) {
       setError(err.message || 'Failed to transfer inventory. Please try again.')

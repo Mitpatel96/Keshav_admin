@@ -14,10 +14,10 @@ import VendorDashboard from './pages/VendorDashboard'
 import VendorInventory from './pages/VendorInventory'
 import VendorOrders from './pages/VendorOrders'
 import VendorSettings from './pages/VendorSettings'
-import VendorDeliveryConfirmation from './pages/VendorDeliveryConfirmation'
 import VendorDamageTicket from './pages/VendorDamageTicket'
 import VendorOrderConfirmation from './pages/VendorOrderConfirmation'
 import VendorWalkInOrder from './pages/VendorWalkInOrder'
+import VendorPendingTransfers from './pages/VendorPendingTransfers'
 import DamageTickets from './pages/DamageTickets'
 import InventoryHistory from './pages/InventoryHistory'
 import PartiallyRejectedOrders from './pages/PartiallyRejectedOrders'
@@ -111,7 +111,7 @@ function App() {
         >
           <Route index element={<VendorDashboard />} />
           <Route path="inventory" element={<VendorInventory />} />
-          <Route path="delivery-confirmation" element={<VendorDeliveryConfirmation />} />
+          <Route path="delivery-confirmation" element={<VendorPendingTransfers />} />
           <Route path="damage-ticket" element={<VendorDamageTicket />} />
           <Route path="orders" element={<VendorOrders />} />
           <Route path="order-confirmation" element={<VendorOrderConfirmation />} />

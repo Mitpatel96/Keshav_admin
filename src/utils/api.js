@@ -375,6 +375,34 @@ export const transferInventoryToVendorAPI = async (transferData) => {
   }
 }
 
+// Get Pending Transfers API (vendor side)
+export const getPendingTransfersAPI = async (page = 1, limit = 100) => {
+  try {
+    const response = await axiosInstance.get('/inventory/pending-transfers', {
+      params: {
+        page,
+        limit,
+      },
+    })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+// Respond to Pending Transfer API (vendor side)
+export const respondToPendingTransferAPI = async (transferId, action, rejectionReason = '') => {
+  try {
+    const response = await axiosInstance.put(`/inventory/pending-transfers/${transferId}/respond`, {
+      action, // 'accept' or 'reject'
+      rejectionReason, // optional
+    })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
 // Get All Inventory API
 export const getAllInventoryAPI = async (page = 1, limit = 100) => {
   try {

@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Search, Package, AlertTriangle, TrendingUp, Eye, Loader2, X, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Package, AlertTriangle, TrendingUp, Loader2, X, CheckCircle, XCircle } from 'lucide-react'
 import { formatCurrency } from '../utils/helpers'
-import { getAllInventoryAPI, getInventoryByIdAPI, approveOrRejectInventoryAPI, getUserData } from '../utils/api'
+import { getAllInventoryAPI, getInventoryByIdAPI, getUserData } from '../utils/api'
 
 const VendorInventory = () => {
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
   const [showViewModal, setShowViewModal] = useState(null)
   const [viewLoading, setViewLoading] = useState(false)
-  const [actionLoading, setActionLoading] = useState({})
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -170,32 +168,12 @@ const VendorInventory = () => {
     }
   }
 
-  const handleApproveReject = async (inventoryId, status) => {
-    try {
-      setActionLoading(prev => ({ ...prev, [inventoryId]: true }))
-      await approveOrRejectInventoryAPI(inventoryId, status)
-      alert(`Inventory ${status === 'confirmed' ? 'confirmed' : 'rejected'} successfully!`)
-      fetchInventory(pagination.currentPage)
-      // Close modal if open
-      if (showViewModal?._id === inventoryId) {
-        setShowViewModal(null)
-      }
-    } catch (error) {
-      alert(error.message || 'Failed to update inventory status')
-    } finally {
-      setActionLoading(prev => ({ ...prev, [inventoryId]: false }))
-    }
-  }
 
   const filteredInventory = inventory.filter((item) => {
-    const matchSearch =
-      item.sku?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku?.skuId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item._id?.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter only by title
+    const matchSearch = item.sku?.title?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchStatus = filterStatus === 'all' || item.status === filterStatus
-    
-    return matchSearch && matchStatus
+    return matchSearch
   })
 
   const totalValue = inventory.reduce((sum, item) => {
@@ -297,27 +275,15 @@ const VendorInventory = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
-            <Search size={20} className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by SKU name, SKU ID, or Inventory ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 outline-none"
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            <option value="all">All Status</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
+        <div className="flex items-center gap-2 border rounded-lg px-4 py-2 max-w-md">
+          <Search size={20} className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by Title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 outline-none"
+          />
         </div>
       </div>
 
@@ -346,18 +312,17 @@ const VendorInventory = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reserved</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Value</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredInventory.map((item) => {
                 const itemValue = (item.quantity || 0) * (item.sku?.mrp || 0)
                 const isLowStock = (item.quantity || 0) < 10
-                const isPending = item.status === 'pending' || !item.status
                 return (
                   <tr
                     key={item._id}
-                    className={isLowStock ? 'bg-red-50' : ''}
+                    onClick={() => handleViewDetails(item._id)}
+                    className={`${isLowStock ? 'bg-red-50' : ''} cursor-pointer hover:bg-gray-50 transition-colors`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
                       {item.sku?.skuId || 'N/A'}
@@ -392,41 +357,6 @@ const VendorInventory = () => {
                       >
                         {item.status || 'pending'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleViewDetails(item._id)}
-                          disabled={viewLoading}
-                          className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 disabled:opacity-50"
-                          title="View Details"
-                        >
-                          <Eye size={16} />
-                          View
-                        </button>
-                        {isPending && (
-                          <>
-                            <button
-                              onClick={() => handleApproveReject(item._id, 'confirmed')}
-                              disabled={actionLoading[item._id]}
-                              className="text-green-600 hover:text-green-700 text-sm flex items-center gap-1 disabled:opacity-50"
-                              title="Approve"
-                            >
-                              <CheckCircle size={16} />
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleApproveReject(item._id, 'rejected')}
-                              disabled={actionLoading[item._id]}
-                              className="text-red-600 hover:text-red-700 text-sm flex items-center gap-1 disabled:opacity-50"
-                              title="Reject"
-                            >
-                              <XCircle size={16} />
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 )
@@ -466,8 +396,6 @@ const VendorInventory = () => {
         <ViewInventoryModal
           inventory={showViewModal}
           onClose={() => setShowViewModal(null)}
-          onApproveReject={handleApproveReject}
-          actionLoading={actionLoading}
         />
       )}
     </div>
@@ -475,9 +403,7 @@ const VendorInventory = () => {
 }
 
 // View Inventory Details Modal
-const ViewInventoryModal = ({ inventory, onClose, onApproveReject, actionLoading }) => {
-  const isPending = inventory?.status === 'pending' || !inventory?.status
-  const canApproveReject = isPending && inventory?.vendor !== null && inventory?.admin === null
+const ViewInventoryModal = ({ inventory, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -493,10 +419,6 @@ const ViewInventoryModal = ({ inventory, onClose, onApproveReject, actionLoading
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-600">Inventory ID</label>
-              <p className="text-sm text-gray-800 font-mono">{inventory?._id || 'N/A'}</p>
-            </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Status</label>
               <p className="text-sm text-gray-800">
@@ -555,18 +477,6 @@ const ViewInventoryModal = ({ inventory, onClose, onApproveReject, actionLoading
                   : inventory?.sku?.category || 'N/A'}
               </p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">Created At</label>
-              <p className="text-sm text-gray-800">
-                {inventory?.createdAt ? new Date(inventory.createdAt).toLocaleString() : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">Updated At</label>
-              <p className="text-sm text-gray-800">
-                {inventory?.updatedAt ? new Date(inventory.updatedAt).toLocaleString() : 'N/A'}
-              </p>
-            </div>
             {inventory?.sku?.images && inventory.sku.images.length > 0 && (
               <div className="col-span-2">
                 <label className="text-sm font-medium text-gray-600">Images</label>
@@ -588,28 +498,6 @@ const ViewInventoryModal = ({ inventory, onClose, onApproveReject, actionLoading
               </div>
             )}
           </div>
-          
-          {canApproveReject && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-gray-600 mb-3">This inventory is pending approval. You can approve or reject it.</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => onApproveReject(inventory._id, 'confirmed')}
-                  disabled={actionLoading[inventory._id]}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {actionLoading[inventory._id] ? 'Processing...' : 'Approve'}
-                </button>
-                <button
-                  onClick={() => onApproveReject(inventory._id, 'rejected')}
-                  disabled={actionLoading[inventory._id]}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {actionLoading[inventory._id] ? 'Processing...' : 'Reject'}
-                </button>
-              </div>
-            </div>
-          )}
           
           <div className="pt-4 border-t">
             <button

@@ -144,11 +144,18 @@ const VendorAssignment = () => {
 
         // API accepts one vendorId with multiple inventory transfers
         // For each vendor, create a transfer request
+        const skuId = selectedSKU.sku?._id || selectedSKU.sku
+        if (!skuId) {
+          alert('SKU ID not found for selected inventory item')
+          setSubmitting(false)
+          return
+        }
+        
         const payload = {
           vendorId: vendorId,
           transfers: [
             {
-              inventoryId: selectedSKU._id,
+              skuId: skuId,
               quantity: qty,
             },
           ],
@@ -157,9 +164,31 @@ const VendorAssignment = () => {
       }
 
       // Execute all transfers
-      await Promise.all(transferPromises)
+      const results = await Promise.all(transferPromises)
       
-      alert('Inventory transferred successfully to all selected vendors!')
+      // Check results for success/failure
+      let successCount = 0
+      let failureCount = 0
+      results.forEach((response) => {
+        if (response?.results && response.results.length > 0) {
+          response.results.forEach((result) => {
+            if (result.status === 'success') {
+              successCount++
+            } else {
+              failureCount++
+            }
+          })
+        } else {
+          successCount++
+        }
+      })
+      
+      if (failureCount > 0) {
+        alert(`Transfer initiated: ${successCount} successful, ${failureCount} failed. Please check the details.`)
+      } else {
+        alert(`Inventory transfer initiated successfully to all selected vendors! ${successCount} transfer(s) pending.`)
+      }
+      
       setAssignmentData({
         selectedVendors: [],
         quantities: {},

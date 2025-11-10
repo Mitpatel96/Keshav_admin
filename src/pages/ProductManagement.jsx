@@ -371,6 +371,7 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
     isCombo: false,
     skus: [],
     price: '',
+    strikeThroughPrice: '',
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -430,6 +431,7 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
         isCombo: false,
         skus: formData.skus,
         price: parseFloat(formData.price),
+        ...(formData.strikeThroughPrice && { strikeThroughPrice: parseFloat(formData.strikeThroughPrice) }),
       }
 
       await createProductAPI(payload)
@@ -440,6 +442,7 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
         isCombo: false,
         skus: [],
         price: '',
+        strikeThroughPrice: '',
       })
       setErrors({})
       onSuccess()
@@ -485,6 +488,18 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
             errors={errors}
             required
             placeholder="Enter product price"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Strike Through Price (₹)"
+            name="strikeThroughPrice"
+            type="number"
+            value={formData.strikeThroughPrice}
+            onChange={handleChange}
+            errors={errors}
+            placeholder="Enter strike through price (optional)"
           />
         </div>
 
@@ -570,6 +585,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
     isCombo: true,
     skus: [],
     price: '',
+    strikeThroughPrice: '',
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -628,6 +644,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
         isCombo: true,
         skus: formData.skus,
         price: parseFloat(formData.price),
+        ...(formData.strikeThroughPrice && { strikeThroughPrice: parseFloat(formData.strikeThroughPrice) }),
       }
 
       await createProductAPI(payload)
@@ -638,6 +655,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
         isCombo: true,
         skus: [],
         price: '',
+        strikeThroughPrice: '',
       })
       setErrors({})
       onSuccess()
@@ -686,6 +704,18 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Strike Through Price (₹)"
+            name="strikeThroughPrice"
+            type="number"
+            value={formData.strikeThroughPrice}
+            onChange={handleChange}
+            errors={errors}
+            placeholder="Enter strike through price (optional)"
+          />
+        </div>
+
         <Textarea
           label="Description"
           name="description"
@@ -727,7 +757,6 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
             <span className="text-sm text-red-500 mt-1">{errors.skus}</span>
           )}
           <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple SKUs</p>
-          <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple SKUs</p>
         </div>
 
         <div className="flex gap-4">
@@ -747,6 +776,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
                 isCombo: true,
                 skus: [],
                 price: '',
+                strikeThroughPrice: '',
               })
               setErrors({})
               setShowForm(false)
