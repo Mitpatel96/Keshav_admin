@@ -337,80 +337,185 @@ const AddInventory = () => {
               {inventory.length === 0 ? 'No inventory found' : 'No items match your search'}
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inventory ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MRP</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredInventory.map((item) => (
-                  <tr key={item._id}>
-                    <td className="px-6 py-4 whitespace-nowrap font-mono text-xs">
-                      {item._id.substring(0, 8)}...
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
-                      {item.sku?.skuId || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4">{item.sku?.title || 'N/A'}</td>
-                    <td className="px-6 py-4">{item.sku?.brand || 'N/A'}</td>
-                    <td className="px-6 py-4">₹{item.sku?.mrp?.toLocaleString() || '0'}</td>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-gray-800">{item.quantity || 0}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          item.status === 'confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {item.status || 'confirmed'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleDateString()
-                        : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
+            <>
+              <table className="hidden w-full rounded-xl border border-gray-100 shadow-sm md:table">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th className="px-5 py-3">Inventory</th>
+                    <th className="px-5 py-3">SKU</th>
+                    <th className="px-5 py-3">Brand</th>
+                    <th className="px-5 py-3 text-right">MRP</th>
+                    <th className="px-5 py-3 text-center">Quantity</th>
+                    <th className="px-5 py-3 text-center">Status</th>
+                    <th className="px-5 py-3">Created</th>
+                    <th className="px-5 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {filteredInventory.map((item) => {
+                    const createdAt = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'
+                    const quantity = item.quantity || 0
+                    const isLowStock = quantity < 5
+                    const status = item.status || 'confirmed'
+                    const statusStyles =
+                      status === 'confirmed'
+                        ? 'bg-green-50 text-green-700 ring-1 ring-green-100'
+                        : status === 'rejected'
+                        ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                        : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
+
+                    return (
+                      <tr key={item._id} className="hover:bg-gray-50/70 transition-colors">
+                        <td className="px-5 py-4 align-top">
+                          <div className="space-y-1">
+                            <p className="font-semibold text-gray-800">{item.sku?.title || 'N/A'}</p>
+                            <p className="text-xs font-mono text-gray-400">#{item._id.substring(0, 8)}</p>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 align-top">
+                          <div className="space-y-1">
+                            <p className="font-medium text-gray-700">{item.sku?.skuId || 'N/A'}</p>
+                            <p className="text-xs text-gray-400">{item.sku?.category?.name || 'Uncategorised'}</p>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-gray-600 align-top">{item.sku?.brand || 'N/A'}</td>
+                        <td className="px-5 py-4 text-right font-semibold text-gray-800 align-top">
+                          ₹{item.sku?.mrp?.toLocaleString() || '0'}
+                        </td>
+                        <td className="px-5 py-4 text-center align-top">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
+                              isLowStock
+                                ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                                : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'
+                            }`}
+                          >
+                            {quantity}
+                            {isLowStock && <span className="ml-1 text-[10px] tracking-wide">Low</span>}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-center align-top">
+                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusStyles}`}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-gray-500 align-top">{createdAt}</td>
+                        <td className="px-5 py-4 align-top">
+                          <div className="flex justify-end gap-2 text-sm">
+                            <button
+                              onClick={() => handleViewInventory(item._id)}
+                              className="flex items-center gap-1 rounded-full border border-blue-100 px-3 py-1 text-blue-600 transition hover:bg-blue-50"
+                            >
+                              <Eye size={16} />
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleRestock(item)}
+                              className="flex items-center gap-1 rounded-full border border-primary-100 px-3 py-1 text-primary-600 transition hover:bg-primary-50"
+                            >
+                              <Edit size={16} />
+                              Restock
+                            </button>
+                            <button
+                              onClick={() => setShowTransferModal(item)}
+                              className="flex items-center gap-1 rounded-full border border-green-100 px-3 py-1 text-green-600 transition hover:bg-green-50"
+                            >
+                              <Truck size={16} />
+                              Transfer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+
+              <div className="space-y-4 md:hidden">
+                {filteredInventory.map((item) => {
+                  const createdAt = item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A'
+                  const quantity = item.quantity || 0
+                  const isLowStock = quantity < 5
+                  const status = item.status || 'confirmed'
+                  const statusStyles =
+                    status === 'confirmed'
+                      ? 'bg-green-50 text-green-700 ring-1 ring-green-100'
+                      : status === 'rejected'
+                      ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                      : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
+
+                  return (
+                    <div key={item._id} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                      <div className="page-header gap-2">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800">{item.sku?.title || 'N/A'}</h3>
+                          <p className="text-xs font-mono text-gray-400">Inventory #{item._id.substring(0, 8)}</p>
+                        </div>
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusStyles}`}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 py-4 text-sm text-gray-600">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-gray-400">SKU</p>
+                          <p className="font-semibold text-gray-800">{item.sku?.skuId || 'N/A'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-wide text-gray-400">MRP</p>
+                          <p className="font-semibold text-gray-800">₹{item.sku?.mrp?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-gray-400">Brand</p>
+                          <p>{item.sku?.brand || 'N/A'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-wide text-gray-400">Created</p>
+                          <p>{createdAt}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-gray-400">Quantity</p>
+                          <span
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                              isLowStock
+                                ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                                : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'
+                            }`}
+                          >
+                            {quantity}
+                            {isLowStock && <span className="ml-1 text-[10px] uppercase tracking-wide">Low</span>}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="action-stack gap-2 pt-3">
                         <button
                           onClick={() => handleViewInventory(item._id)}
-                          className="text-blue-600 hover:text-blue-700"
-                          title="View Details"
+                          className="responsive-button px-3 py-2 border border-blue-100 text-blue-600 hover:bg-blue-50"
                         >
-                          <Eye size={18} />
+                          <Eye size={16} />
+                          View Details
                         </button>
                         <button
                           onClick={() => handleRestock(item)}
-                          className="text-primary-600 hover:text-primary-700"
-                          title="Restock"
+                          className="responsive-button px-3 py-2 border border-primary-100 text-primary-600 hover:bg-primary-50"
                         >
-                          <Edit size={18} />
+                          <Edit size={16} />
+                          Restock
                         </button>
                         <button
                           onClick={() => setShowTransferModal(item)}
-                          className="text-green-600 hover:text-green-700"
-                          title="Transfer to Vendor"
+                          className="responsive-button px-3 py-2 border border-green-100 text-green-600 hover:bg-green-50"
                         >
-                          <Truck size={18} />
+                          <Truck size={16} />
+                          Transfer
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>
