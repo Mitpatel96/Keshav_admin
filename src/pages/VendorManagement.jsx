@@ -98,11 +98,11 @@ const VendorManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Vendor Management</h1>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          className="responsive-button px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
           Add Vendor
@@ -140,7 +140,7 @@ const VendorManagement = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -271,7 +271,7 @@ const VendorManagement = () => {
         
         {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t flex items-center justify-between">
+          <div className="px-6 py-4 border-t page-header">
             <div className="text-sm text-gray-600">
               Showing {filteredVendors.length} of {pagination.totalCount} vendors
             </div>
@@ -491,7 +491,7 @@ const AddVendorForm = ({ onClose, onSuccess }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="page-header mb-6">
         <h2 className="text-2xl font-semibold">Add New Vendor</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={24} />
@@ -900,7 +900,7 @@ const EditVendorForm = ({ vendor, onClose, onSuccess }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="page-header mb-6">
         <h2 className="text-2xl font-semibold">Edit Vendor</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={24} />
@@ -1133,7 +1133,7 @@ const ViewVendorModal = ({ vendor, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="page-header mb-6">
           <h2 className="text-2xl font-semibold">Vendor Details</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />

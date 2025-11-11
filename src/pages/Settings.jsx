@@ -140,11 +140,11 @@ const CategoryManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h2 className="text-2xl font-semibold">Category Management</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          className="responsive-button px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
           Add Category
@@ -203,7 +203,7 @@ const CategoryManagement = () => {
       {/* Category List */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 max-w-md">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full max-w-md">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -321,14 +321,14 @@ const VendorManagementSettings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h2 className="text-2xl font-semibold">All Vendor Management</h2>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -590,7 +590,7 @@ const UserAdminManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h2 className="text-2xl font-semibold">User/Admin Management</h2>
         <button
           onClick={() => {
@@ -610,7 +610,7 @@ const UserAdminManagement = () => {
               setSuccess('')
             }
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          className="responsive-button px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           <UserPlus size={20} />
           {showForm ? 'Cancel' : 'Create User/Admin'}

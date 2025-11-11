@@ -188,11 +188,11 @@ const VendorInventory = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">My Inventory</h1>
         <button
           onClick={() => fetchInventory(pagination.currentPage)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
+          className="responsive-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
         >
           Refresh
         </button>
@@ -201,7 +201,7 @@ const VendorInventory = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Total SKUs</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">{inventory.length}</p>
@@ -210,7 +210,7 @@ const VendorInventory = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Total Stock</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
@@ -221,7 +221,7 @@ const VendorInventory = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Inventory Value</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
@@ -232,7 +232,7 @@ const VendorInventory = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Low Stock Items</p>
               <p className="text-2xl font-bold text-red-600 mt-1">{lowStockCount}</p>
@@ -245,7 +245,7 @@ const VendorInventory = () => {
       {/* Status Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-green-600">Confirmed</p>
               <p className="text-2xl font-bold text-green-800 mt-1">{confirmedCount}</p>
@@ -254,7 +254,7 @@ const VendorInventory = () => {
           </div>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-yellow-600">Pending</p>
               <p className="text-2xl font-bold text-yellow-800 mt-1">{pendingCount}</p>
@@ -263,7 +263,7 @@ const VendorInventory = () => {
           </div>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-red-600">Rejected</p>
               <p className="text-2xl font-bold text-red-800 mt-1">{rejectedCount}</p>
@@ -275,7 +275,7 @@ const VendorInventory = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center gap-2 border rounded-lg px-4 py-2 max-w-md">
+        <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full max-w-md">
           <Search size={20} className="text-gray-400" />
           <input
             type="text"
@@ -368,7 +368,7 @@ const VendorInventory = () => {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white rounded-lg shadow p-4">
+        <div className="page-header bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600">
             Showing page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalCount} items)
           </div>
@@ -408,7 +408,7 @@ const ViewInventoryModal = ({ inventory, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
+        <div className="page-header p-6 border-b sticky top-0 bg-white">
           <h2 className="text-xl font-semibold">Inventory Details</h2>
           <button
             onClick={onClose}

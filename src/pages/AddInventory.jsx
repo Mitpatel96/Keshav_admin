@@ -179,19 +179,19 @@ const AddInventory = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Inventory Management</h1>
-        <div className="flex gap-3">
+        <div className="action-stack gap-3 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={() => navigate('/inventory/assign-vendor')}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="responsive-button px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             <Package size={20} />
             Assign to Vendor
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="responsive-button px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             <Plus size={20} />
             Add Inventory
@@ -314,8 +314,8 @@ const AddInventory = () => {
 
       {/* Inventory List */}
       <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b flex items-center justify-between">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 max-w-md">
+        <div className="p-4 border-b page-header">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full sm:max-w-md">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -492,9 +492,10 @@ const AddStockModal = ({ sku, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="page-header p-6 border-b">
           <h2 className="text-xl font-semibold">Add Stock to SKU</h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -529,18 +530,18 @@ const AddStockModal = ({ sku, onClose }) => {
               {error}
             </div>
           )}
-          <div className="flex gap-3 pt-4">
+          <div className="action-stack gap-3 pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+              className="w-full sm:flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {loading ? 'Adding...' : 'Add Stock'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
               Skip for Now
             </button>
@@ -582,9 +583,10 @@ const RestockInventoryModal = ({ inventory, onClose, onUpdate }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="page-header p-6 border-b">
           <h2 className="text-xl font-semibold">Restock Inventory</h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -620,18 +622,18 @@ const RestockInventoryModal = ({ inventory, onClose, onUpdate }) => {
               {error}
             </div>
           )}
-          <div className="flex gap-3 pt-4">
+          <div className="action-stack gap-3 pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+              className="w-full sm:flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update Inventory'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -647,9 +649,10 @@ const ViewInventoryModal = ({ inventory, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
+        <div className="page-header p-6 border-b sticky top-0 bg-white">
           <h2 className="text-xl font-semibold">Inventory Details</h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -817,9 +820,10 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="page-header p-6 border-b">
           <h2 className="text-xl font-semibold">Transfer to Vendor</h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -877,18 +881,18 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
               {error}
             </div>
           )}
-          <div className="flex gap-3 pt-4">
+          <div className="action-stack gap-3 pt-4">
             <button
               type="submit"
               disabled={loading || vendorsLoading}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="w-full sm:flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
               {loading ? 'Transferring...' : 'Transfer'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -973,7 +977,7 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+        <div className="page-header mb-4">
           <h2 className="text-2xl font-semibold">Update Inventory</h2>
           <button
             onClick={onClose}

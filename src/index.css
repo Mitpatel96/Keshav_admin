@@ -20,3 +20,33 @@ body {
   min-height: 100vh;
 }
 
+@layer components {
+  .page-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .card-toolbar {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .action-stack {
+    @apply flex flex-col sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .page-header > *,
+  .card-toolbar > * {
+    @apply w-full;
+  }
+
+  @screen sm {
+    .page-header > *,
+    .card-toolbar > * {
+      @apply w-auto;
+    }
+  }
+
+  .responsive-button {
+    @apply flex items-center gap-2 justify-center sm:justify-start w-full sm:w-auto;
+  }
+}
+

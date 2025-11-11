@@ -53,7 +53,7 @@ const VendorDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Vendor Dashboard</h1>
         <p className="text-sm text-gray-600">Welcome back, Tech Solutions Pvt Ltd</p>
       </div>
@@ -220,7 +220,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
           <p className="text-sm text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>

@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
       </div>
 
@@ -117,9 +117,9 @@ const Dashboard = () => {
 
       {/* Sales Chart */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="page-header mb-4">
           <h2 className="text-xl font-semibold">Total Sales</h2>
-          <div className="flex items-center gap-4">
+          <div className="action-stack gap-3 sm:gap-4">
             <Select
               name="salesFilter"
               value={salesFilter}
@@ -134,7 +134,7 @@ const Dashboard = () => {
               className="w-40"
             />
             {salesFilter === 'custom' && (
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                 <input
                   type="date"
                   className="px-3 py-1 border rounded"
@@ -361,7 +361,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
           <p className="text-sm text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>

@@ -187,11 +187,11 @@ const DamageTickets = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Damage Tickets</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          className="responsive-button px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
           Create Damage Ticket
@@ -305,8 +305,8 @@ const DamageTickets = () => {
       )}
 
       <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 max-w-md flex-1">
+        <div className="p-4 border-b page-header gap-4">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full max-w-md flex-1">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"

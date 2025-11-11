@@ -97,7 +97,7 @@ const AllUsers = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div className="flex items-center gap-3">
           <Users size={32} className="text-primary-600" />
           <h1 className="text-3xl font-bold text-gray-800">All Users & Admins</h1>
@@ -111,7 +111,7 @@ const AllUsers = () => {
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -281,7 +281,7 @@ const AllUsers = () => {
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="bg-white rounded-lg shadow p-4">
-              <div className="flex items-center justify-between">
+              <div className="page-header">
                 <div className="text-sm text-gray-600">
                   Showing page {pagination.currentPage} of {pagination.totalPages} (
                   {pagination.totalCount} total)

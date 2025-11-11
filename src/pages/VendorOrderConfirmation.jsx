@@ -79,7 +79,7 @@ const VendorOrderConfirmation = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Confirm Order</h1>
       </div>
 
@@ -130,7 +130,7 @@ const VendorOrderConfirmation = () => {
       {/* Order Details */}
       {order && (
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="page-header mb-6">
             <h2 className="text-2xl font-semibold">Order Details</h2>
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 text-xs rounded-full ${

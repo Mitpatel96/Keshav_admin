@@ -117,7 +117,7 @@ const ProductManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">Product Management</h1>
       </div>
 
@@ -198,7 +198,7 @@ const ProductList = ({ products, searchTerm, setSearchTerm, filters, setFilters,
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -455,7 +455,7 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="page-header mb-6">
         <h2 className="text-2xl font-semibold">Add New Product</h2>
         <button onClick={() => setShowForm(!showForm)}>
           <X size={24} />
@@ -668,7 +668,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="page-header mb-6">
         <h2 className="text-2xl font-semibold">Add Combo Product</h2>
         <button onClick={() => setShowForm(!showForm)}>
           <X size={24} />

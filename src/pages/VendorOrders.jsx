@@ -108,7 +108,7 @@ const VendorOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
       </div>
 
@@ -139,7 +139,7 @@ const VendorOrders = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -283,7 +283,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+        <div className="page-header mb-4">
           <h2 className="text-2xl font-semibold">Order Details - {order.id}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <span className="text-2xl">×</span>

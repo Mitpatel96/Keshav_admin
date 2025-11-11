@@ -38,19 +38,25 @@ const Sidebar = ({ currentPath }) => {
     <>
       {/* Mobile menu button */}
       <button
+        type="button"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+        aria-label="Toggle navigation menu"
+        aria-expanded={isMobileOpen}
+        aria-controls="admin-sidebar"
       >
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Sidebar */}
       <aside
+        id="admin-sidebar"
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-white shadow-lg
+          w-64 sm:w-72 bg-white shadow-lg
           transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} 
           lg:translate-x-0 transition-transform duration-300 ease-in-out
+          flex-shrink-0
         `}
       >
         <div className="h-full flex flex-col">

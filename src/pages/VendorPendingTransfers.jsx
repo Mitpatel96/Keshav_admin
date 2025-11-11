@@ -146,7 +146,7 @@ const VendorPendingTransfers = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Delivery Confirmation</h1>
           <p className="text-gray-600 mt-1">Review and approve inventory transfers from admin</p>
@@ -156,7 +156,7 @@ const VendorPendingTransfers = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Total Pending</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
@@ -169,7 +169,7 @@ const VendorPendingTransfers = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Total Items</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
@@ -182,7 +182,7 @@ const VendorPendingTransfers = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
+          <div className="page-header">
             <div>
               <p className="text-sm text-gray-600">Total Value</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">
@@ -204,7 +204,7 @@ const VendorPendingTransfers = () => {
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center gap-4">
-          <div className="flex-1 flex items-center gap-2 border rounded-lg px-4 py-2">
+          <div className="flex-1 flex items-center gap-2 border rounded-lg px-4 py-2 w-full">
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
@@ -336,7 +336,7 @@ const VendorPendingTransfers = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+          <div className="bg-gray-50 px-6 py-4 page-header border-t">
             <div className="text-sm text-gray-700">
               Showing page {pagination.currentPage} of {pagination.totalPages} (
               {pagination.totalCount} total)
@@ -365,7 +365,7 @@ const VendorPendingTransfers = () => {
       {selectedTransfer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
+            <div className="page-header p-6 border-b">
               <h2 className="text-xl font-semibold">Transfer Details</h2>
               <button
                 onClick={() => setSelectedTransfer(null)}
@@ -516,7 +516,7 @@ const VendorPendingTransfers = () => {
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b">
+            <div className="page-header p-6 border-b">
               <h2 className="text-xl font-semibold">Reject Transfer</h2>
               <button
                 onClick={() => {
