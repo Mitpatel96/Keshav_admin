@@ -12,6 +12,7 @@ import {
   History,
   XCircle,
   LayoutGrid,
+  Ticket,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -28,6 +29,7 @@ const Sidebar = ({ currentPath }) => {
     { path: '/inventory-history', icon: History, label: 'Inventory History' },
     { path: '/partially-rejected-orders', icon: XCircle, label: 'Rejected Orders' },
     { path: '/website-sections', icon: LayoutGrid, label: 'Website Sections' },
+    { path: '/promos', icon: Ticket, label: 'Promos' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ]
 

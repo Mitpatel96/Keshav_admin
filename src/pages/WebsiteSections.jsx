@@ -144,7 +144,7 @@ const buildPayload = (formData, config) => {
         payload.categoryId = formData.categoryId
     }
 
-    if (config.hasImages && config.requiresImages) {
+    if (config.hasImages && config.requiresImages) {sideb
         const uploadedImages = Array.isArray(formData.images) ? formData.images.filter(Boolean) : []
         const manualImages = parseListInput(formData.imagesText)
         const images = Array.from(new Set([...uploadedImages, ...manualImages]))

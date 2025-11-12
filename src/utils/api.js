@@ -680,3 +680,40 @@ export const generateBillAPI = async (orderId, cashAmount) => {
   }
 }
 
+// Promo APIs
+export const createPromoBatchAPI = async (batchData) => {
+  try {
+    const response = await axiosInstance.post('/promos/batches', batchData)
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const getPromoBatchesAPI = async (params = {}) => {
+  try {
+    const response = await axiosInstance.get('/promos/batches', { params })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const getPromoBatchByIdAPI = async (batchId, params = {}) => {
+  try {
+    const response = await axiosInstance.get(`/promos/batches/${batchId}`, { params })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const deactivatePromoBatchAPI = async (batchId) => {
+  try {
+    const response = await axiosInstance.patch(`/promos/batches/${batchId}/deactivate`)
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
