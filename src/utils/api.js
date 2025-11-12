@@ -197,15 +197,23 @@ export const deactivateVendorAPI = async (vendorId) => {
 }
 
 // Upload Image API
-// POST /upload/image - for basic image upload
-// POST /upload/image/:file - for image upload with file path parameter
-export const uploadImageAPI = async (file, filePath = '') => {
+// Defaults to POST /upload/image but can be overridden with options.uploadUrl
+export const uploadImageAPI = async (
+  file,
+  {
+    uploadUrl = '/upload/image',
+    filePath = '',
+    fieldName = 'image',
+  } = {}
+) => {
   try {
     const formData = new FormData()
-    formData.append('image', file)
-    
-    // If filePath is provided, use /upload/image/:file, otherwise use /upload/image
-    const endpoint = filePath ? `/upload/image/${filePath}` : '/upload/image'
+    formData.append(fieldName, file)
+
+    const endpoint =
+      uploadUrl ||
+      (filePath ? `/upload/image/${filePath}` : '/upload/image')
+
     const response = await axiosInstance.post(endpoint, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -223,7 +231,7 @@ export const uploadFileAPI = async (file) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     const response = await axiosInstance.post('/upload/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -597,6 +605,62 @@ export const getVendorOrdersAPI = async (vendorId, page = 1, limit = 100) => {
         limit,
       },
     })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+// Traders API
+export const getTradersAPI = async (page = 1, limit = 100) => {
+  try {
+    const response = await axiosInstance.get('/traders', {
+      params: { page, limit },
+    })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+// Website Sections APIs
+export const getWebsiteSectionsAPI = async (sectionType, traderId, page = 1, limit = 100) => {
+  try {
+    const response = await axiosInstance.get('/website-sections', {
+      params: {
+        sectionType,
+        trader: traderId,
+        page,
+        limit,
+      },
+    })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const createWebsiteSectionAPI = async (sectionData) => {
+  try {
+    const response = await axiosInstance.post('/website-sections', sectionData)
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const updateWebsiteSectionAPI = async (sectionId, sectionData) => {
+  try {
+    const response = await axiosInstance.put(`/website-sections/${sectionId}`, sectionData)
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+export const deleteWebsiteSectionAPI = async (sectionId) => {
+  try {
+    const response = await axiosInstance.delete(`/website-sections/${sectionId}`)
     return response
   } catch (error) {
     throw error

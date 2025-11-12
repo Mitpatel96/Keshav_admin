@@ -1,5 +1,5 @@
 import { Upload, X, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { uploadImageAPI, uploadFileAPI } from '../../utils/api'
 
 const FileUpload = ({
@@ -13,14 +13,44 @@ const FileUpload = ({
   maxSizeMB = 5,
   className = '',
   uploadedFiles = [],
+  uploadUrl = '',
+  fieldName = 'image',
+  mapResponseToValue,
   ...props
 }) => {
   const [dragActive, setDragActive] = useState(false)
-  const [files, setFiles] = useState(uploadedFiles || [])
+  const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState({})
 
   const isImage = accept.includes('image')
+
+  useEffect(() => {
+    if (!uploadedFiles || (Array.isArray(uploadedFiles) && uploadedFiles.length === 0)) {
+      setFiles([])
+      return
+    }
+
+    const normalized = (Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles])
+      .filter(Boolean)
+      .map((item) => {
+        if (typeof item === 'string') {
+          return {
+            path: item,
+            name: item.split('/').pop(),
+          }
+        }
+        if (item?.path || item?.name || item?.file) {
+          return item
+        }
+        return {
+          path: item,
+          name: typeof item === 'object' && item !== null ? item?.toString() : '',
+        }
+      })
+
+    setFiles(normalized)
+  }, [uploadedFiles])
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -37,42 +67,62 @@ const FileUpload = ({
     if (file.size > maxSizeMB * 1024 * 1024) {
       throw new Error(`File size exceeds ${maxSizeMB}MB limit`)
     }
-    
+
     // Check file type
     if (accept !== '*/*' && accept !== '') {
       const acceptedTypes = accept.split(',').map(type => type.trim())
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
       const fileType = file.type.toLowerCase()
-      
+
       const isAccepted = acceptedTypes.some(type => {
         if (type.startsWith('.')) {
           return fileExtension === type.toLowerCase()
         }
         return fileType.match(type.replace('*', '.*'))
       })
-      
+
       if (!isAccepted) {
         throw new Error(`File type not allowed. Accepted: ${accept}`)
       }
     }
-    
+
     return true
+  }
+
+  const resolveUploadedPath = (response) => {
+    if (typeof mapResponseToValue === 'function') {
+      const mapped = mapResponseToValue(response)
+      if (mapped) {
+        return mapped
+      }
+    }
+
+    return (
+      response?.data?.image ||
+      response?.data?.path ||
+      response?.data?.filePath ||
+      response?.data?.url ||
+      response?.path ||
+      response?.filePath ||
+      response?.url ||
+      ''
+    )
   }
 
   const uploadFile = async (file, index) => {
     try {
       setUploadProgress((prev) => ({ ...prev, [index]: 'uploading' }))
-      
+
       let response
       if (isImage) {
-        response = await uploadImageAPI(file)
+        response = await uploadImageAPI(file, { uploadUrl, fieldName })
       } else {
         response = await uploadFileAPI(file)
       }
-      
+
       // Response should contain the file path
-      const filePath = response.path || response.filePath || response.url || response.data?.path || response.data?.filePath || response.data?.url
-      
+      const filePath = resolveUploadedPath(response)
+
       setUploadProgress((prev) => ({ ...prev, [index]: 'completed' }))
       return filePath
     } catch (error) {
@@ -85,7 +135,7 @@ const FileUpload = ({
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       await processFiles(Array.from(e.dataTransfer.files))
     }
@@ -100,7 +150,7 @@ const FileUpload = ({
   const processFiles = async (fileList) => {
     try {
       setUploading(true)
-      
+
       // Validate all files first
       fileList.forEach((file) => {
         validateFile(file)
@@ -111,28 +161,32 @@ const FileUpload = ({
       const uploadedPaths = await Promise.all(uploadPromises)
 
       // Update files state
-      const newFiles = [
-        ...files,
-        ...fileList.map((file, index) => ({
-          file: file,
-          path: uploadedPaths[index],
-          name: file.name,
-        })),
-      ]
-      setFiles(newFiles)
+      const appendedFiles = fileList.map((file, index) => ({
+        file,
+        path: uploadedPaths[index],
+        name: file.name,
+      }))
 
-      // Call onChange with file paths
-      if (onChange) {
-        const filePaths = multiple ? uploadedPaths : uploadedPaths[0]
-        onChange({
-          target: {
-            name: name,
-            value: filePaths,
-            files: fileList,
-            uploadedPaths: uploadedPaths,
-          },
-        })
-      }
+      setFiles((prevFiles) => {
+        const nextFiles = [...prevFiles, ...appendedFiles]
+
+        if (onChange) {
+          const allPaths = nextFiles.map((f) => f?.path || f).filter(Boolean)
+          const value = multiple ? allPaths : allPaths[allPaths.length - 1] || ''
+
+          onChange({
+            target: {
+              name,
+              value,
+              files: fileList,
+              uploadedPaths,
+              allPaths,
+            },
+          })
+        }
+
+        return nextFiles
+      })
     } catch (error) {
       if (onChange) {
         onChange({
@@ -159,6 +213,7 @@ const FileUpload = ({
           name: name,
           value: multiple ? filePaths : filePaths[0] || '',
           files: newFiles.map((f) => f.file).filter(Boolean),
+          allPaths: filePaths,
         },
       })
     }
@@ -207,8 +262,8 @@ const FileUpload = ({
             {uploading
               ? 'Uploading...'
               : files.length > 0
-              ? `${files.length} file(s) uploaded`
-              : `Click to upload or drag and drop`}
+                ? `${files.length} file(s) uploaded`
+                : `Click to upload or drag and drop`}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             Max {maxSizeMB}MB per file

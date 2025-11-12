@@ -21,6 +21,7 @@ import VendorPendingTransfers from './pages/VendorPendingTransfers'
 import DamageTickets from './pages/DamageTickets'
 import InventoryHistory from './pages/InventoryHistory'
 import PartiallyRejectedOrders from './pages/PartiallyRejectedOrders'
+import WebsiteSections from './pages/WebsiteSections'
 import { getUserData, getAuthToken } from './utils/api'
 
 // Protected Route Component for Admin
@@ -97,6 +98,7 @@ function App() {
           <Route path="damage-tickets" element={<DamageTickets />} />
           <Route path="inventory-history" element={<InventoryHistory />} />
           <Route path="partially-rejected-orders" element={<PartiallyRejectedOrders />} />
+          <Route path="website-sections" element={<WebsiteSections />} />
         </Route>
 
         {/* Vendor Routes */}

@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Package, 
-  ShoppingBag, 
+import {
+  LayoutDashboard,
+  Settings,
+  Package,
+  ShoppingBag,
   Users,
   UserCheck,
   Menu,
   X,
   AlertTriangle,
   History,
-  XCircle
+  XCircle,
+  LayoutGrid,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -26,6 +27,7 @@ const Sidebar = ({ currentPath }) => {
     { path: '/damage-tickets', icon: AlertTriangle, label: 'Damage Tickets' },
     { path: '/inventory-history', icon: History, label: 'Inventory History' },
     { path: '/partially-rejected-orders', icon: XCircle, label: 'Rejected Orders' },
+    { path: '/website-sections', icon: LayoutGrid, label: 'Website Sections' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ]
 
