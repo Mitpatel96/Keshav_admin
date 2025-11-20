@@ -6,7 +6,7 @@ import Textarea from '../components/Form/Textarea'
 import FileUpload from '../components/Form/FileUpload'
 import { generateProductCode, calculateSavings } from '../utils/helpers'
 import { formatCurrency } from '../utils/helpers'
-import { createProductAPI, getAllProductsAPI, updateProductAPI, deleteProductAPI, getAllSKUsAPI } from '../utils/api'
+import { createProductAPI, getAllProductsAPI, getProductByIdAPI, updateProductAPI, deleteProductAPI, getAllSKUsAPI } from '../utils/api'
 
 const buildImageUrl = (path) => {
   if (!path) return ''
@@ -34,6 +34,8 @@ const ProductManagement = () => {
   const [skusLoading, setSkusLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showComboForm, setShowComboForm] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({
     status: 'all',
@@ -117,14 +119,17 @@ const ProductManagement = () => {
       const product = products.find(p => p._id === productId)
       if (!product) return
 
+      // Fetch full product details to ensure we have all required fields
+      const fullProduct = await getProductByIdAPI(productId)
+      
       const updatedData = {
-        title: product.title,
-        description: product.description,
-        isCombo: product.isCombo,
-        skus: product.skus.map(s => ({ sku: typeof s.sku === 'object' ? s.sku._id : s.sku })),
-        price: product.price,
-        images: product.images || [],
-        ...(product.strikeThroughPrice && { strikeThroughPrice: product.strikeThroughPrice }),
+        title: fullProduct.title,
+        description: fullProduct.description,
+        isCombo: fullProduct.isCombo,
+        skus: fullProduct.skus.map(s => ({ sku: typeof s.sku === 'object' ? s.sku._id : s.sku })),
+        price: fullProduct.price,
+        images: fullProduct.images || [],
+        ...(fullProduct.strikeThroughPrice && { strikeThroughPrice: fullProduct.strikeThroughPrice }),
       }
 
       await updateProductAPI(productId, updatedData)
@@ -178,6 +183,8 @@ const ProductManagement = () => {
             onToggleOutOfStock={toggleOutOfStock}
             onDelete={handleDeleteProduct}
             onRefresh={fetchProducts}
+            onView={(product) => setShowViewModal(product)}
+            onEdit={(product) => setShowEditModal(product)}
           />
         )}
         {activeTab === 'add' && (
@@ -205,12 +212,38 @@ const ProductManagement = () => {
           />
         )}
       </div>
+
+      {/* View Product Modal */}
+      {showViewModal && (
+        <ViewProductModal
+          product={showViewModal}
+          onClose={() => setShowViewModal(null)}
+          onEdit={() => {
+            setShowEditModal(showViewModal)
+            setShowViewModal(null)
+          }}
+        />
+      )}
+
+      {/* Edit Product Modal */}
+      {showEditModal && (
+        <EditProductModal
+          product={showEditModal}
+          skus={skus}
+          skusLoading={skusLoading}
+          onClose={() => setShowEditModal(null)}
+          onSuccess={() => {
+            setShowEditModal(null)
+            fetchProducts()
+          }}
+        />
+      )}
     </div>
   )
 }
 
 // Product List Component
-const ProductList = ({ products, searchTerm, setSearchTerm, filters, setFilters, loading, onToggleOutOfStock, onDelete, onRefresh }) => {
+const ProductList = ({ products, searchTerm, setSearchTerm, filters, setFilters, loading, onToggleOutOfStock, onDelete, onRefresh, onView, onEdit }) => {
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -360,20 +393,33 @@ const ProductList = ({ products, searchTerm, setSearchTerm, filters, setFilters,
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex gap-2">
                       <button
+                        onClick={() => onView(product)}
+                        className="text-blue-600 hover:text-blue-700"
+                        title="View Details"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        onClick={() => onEdit(product)}
+                        className="text-primary-600 hover:text-primary-700"
+                        title="Edit Product"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button
                         onClick={() => onToggleOutOfStock(product._id)}
                         className={`text-sm px-2 py-1 rounded ${product.active === false
                             ? 'bg-green-100 text-green-700'
                             : 'bg-red-100 text-red-700'
                           }`}
+                        title={product.active === false ? 'Activate' : 'Deactivate'}
                       >
                         {product.active === false ? 'Activate' : 'Deactivate'}
-                      </button>
-                      <button className="text-primary-600 hover:text-primary-700">
-                        <Edit size={18} />
                       </button>
                       <button
                         onClick={() => onDelete(product._id)}
                         className="text-red-600 hover:text-red-700"
+                        title="Delete Product"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -468,10 +514,6 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
 
     if (!formData.skus || formData.skus.length === 0) {
       newErrors.skus = 'At least one SKU is required'
-    }
-
-    if (!formData.images || formData.images.length === 0) {
-      newErrors.images = 'At least one product image is required'
     }
 
     setErrors(newErrors)
@@ -580,7 +622,6 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
           name="images"
           onChange={handleChange}
           errors={errors}
-          required
           multiple
           accept="image/*"
           uploadUrl="/upload/image/avatar"
@@ -610,7 +651,7 @@ const AddProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }) => 
             >
               {skus.map((sku) => (
                 <option key={sku._id} value={sku._id}>
-                  {sku.skuId} - {sku.title} ({sku.brand})
+                  {sku.skuId} - {sku.title} ({sku.brand}) - {sku.unitValue || 1} {sku.unit || 'piece'}
                 </option>
               ))}
             </select>
@@ -874,7 +915,7 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
             >
               {skus.map((sku) => (
                 <option key={sku._id} value={sku._id}>
-                  {sku.skuId} - {sku.title} ({sku.brand})
+                  {sku.skuId} - {sku.title} ({sku.brand}) - {sku.unitValue || 1} {sku.unit || 'piece'}
                 </option>
               ))}
             </select>
@@ -914,6 +955,444 @@ const AddComboProduct = ({ showForm, setShowForm, skus, skusLoading, onSuccess }
           </button>
         </div>
       </form>
+    </div>
+  )
+}
+
+// View Product Modal Component
+const ViewProductModal = ({ product, onClose, onEdit }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="page-header p-6 border-b sticky top-0 bg-white">
+          <h2 className="text-xl font-semibold">Product Details</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+        <div className="p-6 space-y-6">
+          {/* Product Basic Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-600">Product ID</label>
+              <p className="text-sm text-gray-800 font-mono">{product?._id || 'N/A'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">Title</label>
+              <p className="text-sm text-gray-800 font-semibold">{product?.title || 'N/A'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">Type</label>
+              <p className="text-sm text-gray-800">
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  product?.isCombo ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {product?.isCombo ? 'Combo Product' : 'Regular Product'}
+                </span>
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">Status</label>
+              <p className="text-sm text-gray-800">
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  product?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {product?.active ? 'Active' : 'Inactive'}
+                </span>
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">Price</label>
+              <p className="text-sm text-gray-800 font-semibold">₹{product?.price?.toLocaleString() || '0'}</p>
+            </div>
+            {product?.strikeThroughPrice && (
+              <div>
+                <label className="text-sm font-medium text-gray-600">Strike Through Price</label>
+                <p className="text-sm text-gray-800 line-through">₹{product.strikeThroughPrice.toLocaleString()}</p>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium text-gray-600">Quantity</label>
+              <p className="text-sm text-gray-800">{product?.quantity || 0}</p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Description</label>
+            <p className="text-sm text-gray-800 mt-1">{product?.description || 'N/A'}</p>
+          </div>
+
+          {/* Images */}
+          {product?.images && product.images.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Product Images</label>
+              <div className="grid grid-cols-3 gap-4">
+                {product.images.map((img, idx) => {
+                  const imageUrl = buildImageUrl(img)
+                  return (
+                    <div key={idx} className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt={`${product.title} - Image ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = 'https://via.placeholder.com/200?text=Image'
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Variants (for non-combo products) */}
+          {!product?.isCombo && product?.variants && product.variants.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Variants</label>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Index</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Title</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Display</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Unit</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Unit Value</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-600">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {product.variants.map((variant, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2 text-sm text-gray-800">{variant.index}</td>
+                        <td className="px-4 py-2 text-sm text-gray-800">{variant.title}</td>
+                        <td className="px-4 py-2 text-sm text-gray-800">{variant.display}</td>
+                        <td className="px-4 py-2 text-sm text-gray-800">{variant.unit}</td>
+                        <td className="px-4 py-2 text-sm text-gray-800">{variant.unitValue}</td>
+                        <td className="px-4 py-2 text-sm text-gray-800 font-semibold">₹{variant.price?.toLocaleString() || '0'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* SKUs */}
+          {product?.skus && product.skus.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">
+                {product.isCombo ? 'Combo SKUs' : 'Product SKUs'}
+              </label>
+              <div className="space-y-2">
+                {product.skus.map((skuItem, idx) => {
+                  const sku = skuItem.sku || skuItem
+                  return (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-500">SKU ID</p>
+                          <p className="text-sm font-semibold text-gray-800">{sku.skuId || sku._id}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Title</p>
+                          <p className="text-sm text-gray-800">{sku.title}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Brand</p>
+                          <p className="text-sm text-gray-800">{sku.brand}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Category</p>
+                          <p className="text-sm text-gray-800">
+                            {typeof sku.category === 'object' ? sku.category.name : sku.category}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">MRP</p>
+                          <p className="text-sm text-gray-800 font-semibold">₹{sku.mrp?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Unit</p>
+                          <p className="text-sm text-gray-800">{sku.unit || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Unit Value</p>
+                          <p className="text-sm text-gray-800">{sku.unitValue || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Edit Product Modal Component
+const EditProductModal = ({ product, skus, skusLoading, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    title: product?.title || '',
+    description: product?.description || '',
+    isCombo: product?.isCombo || false,
+    skus: product?.skus?.map(s => ({ sku: typeof s.sku === 'object' ? s.sku._id : s.sku })) || [],
+    price: product?.price || '',
+    strikeThroughPrice: product?.strikeThroughPrice || '',
+    images: product?.images || [],
+  })
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    if (!e || !e.target) return
+
+    const { name, value, type, checked, error, allPaths } = e.target
+
+    if (error) {
+      setErrors((prev) => ({ ...prev, [name]: error }))
+      return
+    }
+
+    const derivedValue = type === 'checkbox' ? checked : value
+
+    setFormData((prev) => {
+      const next = { ...prev }
+
+      if (name === 'images') {
+        const imageList = Array.isArray(allPaths)
+          ? allPaths
+          : Array.isArray(derivedValue)
+            ? derivedValue
+            : derivedValue
+              ? [derivedValue]
+              : []
+        next.images = imageList
+      } else {
+        next[name] = derivedValue
+      }
+
+      return next
+    })
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const handleSKUChange = (e) => {
+    const selectedSKUs = Array.from(e.target.selectedOptions, option => option.value)
+    setFormData((prev) => ({
+      ...prev,
+      skus: selectedSKUs.map(skuId => ({ sku: skuId })),
+    }))
+    if (errors.skus) {
+      setErrors((prev) => ({ ...prev, skus: '' }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Product title is required'
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required'
+    }
+
+    if (!formData.price || parseFloat(formData.price) < 1) {
+      newErrors.price = 'Price must be at least ₹1'
+    }
+
+    if (!formData.skus || formData.skus.length === 0) {
+      newErrors.skus = 'At least one SKU is required'
+    }
+
+    if (formData.isCombo && (!formData.skus || formData.skus.length < 2)) {
+      newErrors.skus = 'At least 2 SKUs are required for combo'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validateForm()) return
+
+    try {
+      setLoading(true)
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        isCombo: formData.isCombo,
+        skus: formData.skus,
+        price: parseFloat(formData.price),
+        images: formData.images,
+        ...(formData.strikeThroughPrice && { strikeThroughPrice: parseFloat(formData.strikeThroughPrice) }),
+      }
+
+      await updateProductAPI(product._id, payload)
+      alert('Product updated successfully!')
+      onSuccess()
+    } catch (error) {
+      setErrors({ submit: error.message || 'Failed to update product. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="page-header p-6 border-b sticky top-0 bg-white">
+          <h2 className="text-xl font-semibold">Edit Product</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-6">
+          {errors.submit && (
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {errors.submit}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Product Title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                errors={errors}
+                required
+                placeholder="Enter product title"
+              />
+              <Input
+                label="Price (₹)"
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={handleChange}
+                errors={errors}
+                required
+                placeholder="Enter product price"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Strike Through Price (₹)"
+                name="strikeThroughPrice"
+                type="number"
+                value={formData.strikeThroughPrice}
+                onChange={handleChange}
+                errors={errors}
+                placeholder="Enter strike through price (optional)"
+              />
+            </div>
+
+            <Textarea
+              label="Description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              errors={errors}
+              required
+              placeholder="Enter product description"
+              rows={4}
+            />
+
+            <FileUpload
+              label="Product Images"
+              name="images"
+              onChange={handleChange}
+              errors={errors}
+              multiple
+              accept="image/*"
+              uploadUrl="/upload/image/avatar"
+              fieldName="image"
+              mapResponseToValue={(response) => response?.data?.image}
+              uploadedFiles={formData.images}
+              maxSizeMB={10}
+            />
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Select SKUs <span className="text-red-500">*</span>
+                {formData.isCombo && <span className="text-gray-500"> (Minimum 2 for combo)</span>}
+              </label>
+              {skusLoading ? (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 size={16} className="animate-spin" />
+                  Loading SKUs...
+                </div>
+              ) : (
+                <select
+                  name="skus"
+                  multiple
+                  value={formData.skus.map(s => s.sku)}
+                  onChange={handleSKUChange}
+                  className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 h-32 ${errors.skus ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                >
+                  {skus.map((sku) => (
+                    <option key={sku._id} value={sku._id}>
+                      {sku.skuId} - {sku.title} ({sku.brand}) - {sku.unitValue || 1} {sku.unit || 'piece'}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {errors.skus && (
+                <span className="text-sm text-red-500 mt-1">{errors.skus}</span>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple SKUs</p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+              >
+                {loading ? 'Updating...' : 'Update Product'}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

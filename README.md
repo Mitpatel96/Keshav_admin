@@ -57,15 +57,72 @@ A comprehensive React-based admin panel for managing inventory, products, vendor
 npm install
 ```
 
-2. Start development server:
+2. Configure environment variables (optional):
+   - Create a `.env` file in the project root
+   - See "Socket Configuration" section below for options
+
+3. Start development server:
 ```bash
 npm run dev
 ```
 
-3. Build for production:
+4. Build for production:
 ```bash
 npm run build
 ```
+
+## Environment Configuration
+
+You can easily switch between **local** and **live/production** environments for both API and Socket connections.
+
+### Quick Setup
+
+Create a `.env` file in the project root (`d:\MIT BHAI\AMAN\Keshav_admin\.env`):
+
+#### For Local Development (localhost:8080):
+```env
+VITE_USE_LOCAL_API=true
+```
+This will:
+- Connect API to: `http://localhost:8080/api`
+- Connect Socket to: `http://localhost:8080`
+
+#### For Live/Production (default):
+```env
+VITE_USE_LOCAL_API=false
+```
+Or simply **don't create a `.env` file** - it will default to:
+- API: `https://dev.api.keshavtraders.com.au/api`
+- Socket: `https://dev.api.keshavtraders.com.au`
+
+#### Custom URLs:
+```env
+# Custom API URL
+VITE_API_BASE_URL=https://your-api-url.com/api
+
+# Custom Socket URL (optional, will use API URL if not set)
+VITE_SOCKET_URL=https://your-socket-url.com
+```
+
+### Environment Variables Priority:
+
+**For API:**
+1. `VITE_API_BASE_URL` - Highest priority (if set, uses this)
+2. `VITE_USE_LOCAL_API=true` - Uses `http://localhost:8080/api`
+3. Default - Uses production: `https://dev.api.keshavtraders.com.au/api`
+
+**For Socket:**
+1. `VITE_SOCKET_URL` - Highest priority (if set, uses this)
+2. `VITE_USE_LOCAL_API=true` - Uses `http://localhost:8080` (same as API)
+3. `VITE_API_BASE_URL` - Uses base URL from API config (removes `/api`)
+4. Default - Uses production: `https://dev.api.keshavtraders.com.au`
+
+### Important Notes:
+
+- **After changing `.env` file, restart your dev server** (`npm run dev`)
+- Both API and Socket will use the same environment (local or production) by default
+- You can override Socket URL separately using `VITE_SOCKET_URL` if needed
+- Check browser console to see which URLs are being used
 
 ## Usage
 

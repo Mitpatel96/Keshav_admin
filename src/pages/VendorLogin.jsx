@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Input from '../components/Form/Input'
 import { loginAPI, setAuthData, getUserData, getAuthToken } from '../utils/api'
+import { useSocket } from '../contexts/SocketContext'
 
 const VendorLogin = () => {
   const navigate = useNavigate()
+  const { connectSocket } = useSocket()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,7 +20,7 @@ const VendorLogin = () => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
     const token = getAuthToken()
     const userData = getUserData()
-    
+
     if (isAuthenticated && token && userData) {
       if (userData.role === 'vendor') {
         navigate('/vendor', { replace: true })
@@ -48,24 +50,24 @@ const VendorLogin = () => {
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!formData.email.includes('@')) {
       newErrors.email = 'Invalid email format'
     }
-    
+
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -75,17 +77,17 @@ const VendorLogin = () => {
 
     try {
       const response = await loginAPI(formData.email, formData.password)
-      
+
       // Check if user is a vendor
       if (response.user.role !== 'vendor') {
         setError('Access denied. This portal is for vendors only.')
         setLoading(false)
         return
       }
-      
+
       // Store auth data
       setAuthData(response.token, response.user)
-      
+
       // Store vendor ID if available
       if (response.user._id) {
         localStorage.setItem('vendorId', response.user._id)
@@ -93,7 +95,15 @@ const VendorLogin = () => {
       if (response.user.permanentId) {
         localStorage.setItem('vendorId', response.user.permanentId)
       }
-      
+
+      // Connect socket after successful login
+      // Small delay to ensure auth data is stored
+      setTimeout(() => {
+        if (connectSocket) {
+          connectSocket()
+        }
+      }, 100)
+
       navigate('/vendor')
     } catch (err) {
       setError(err.message || 'Invalid email or password')
@@ -108,7 +118,7 @@ const VendorLogin = () => {
           Vendor Portal
         </h1>
         <p className="text-center text-gray-600 mb-6">Sign in to your vendor account</p>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Email"
@@ -120,7 +130,7 @@ const VendorLogin = () => {
             required
             placeholder="Enter your email"
           />
-          
+
           <Input
             label="Password"
             name="password"

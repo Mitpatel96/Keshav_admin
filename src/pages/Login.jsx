@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Input from '../components/Form/Input'
 import { loginAPI, setAuthData, getUserData, getAuthToken } from '../utils/api'
+import { useSocket } from '../contexts/SocketContext'
 
 const Login = () => {
   const navigate = useNavigate()
+  const { connectSocket } = useSocket()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,7 +20,7 @@ const Login = () => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
     const token = getAuthToken()
     const userData = getUserData()
-    
+
     if (isAuthenticated && token && userData) {
       if (userData.role === 'admin') {
         navigate('/', { replace: true })
@@ -48,24 +50,24 @@ const Login = () => {
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!formData.email.includes('@')) {
       newErrors.email = 'Invalid email format'
     }
-    
+
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -75,10 +77,18 @@ const Login = () => {
 
     try {
       const response = await loginAPI(formData.email, formData.password)
-      
+
       // Store auth data
       setAuthData(response.token, response.user)
-      
+
+      // Connect socket after successful login
+      // Small delay to ensure auth data is stored
+      setTimeout(() => {
+        if (connectSocket) {
+          connectSocket()
+        }
+      }, 100)
+
       // Check user role and redirect accordingly
       if (response.user.role === 'admin') {
         navigate('/')
@@ -101,7 +111,7 @@ const Login = () => {
           Keshav Admin
         </h1>
         <p className="text-center text-gray-600 mb-6">Sign in to your account</p>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Email"
@@ -113,7 +123,7 @@ const Login = () => {
             required
             placeholder="Enter your email"
           />
-          
+
           <Input
             label="Password"
             name="password"

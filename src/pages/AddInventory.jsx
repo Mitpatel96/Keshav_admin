@@ -25,6 +25,8 @@ const AddInventory = () => {
     brand: '',
     mrp: '',
     images: [],
+    unit: 'litre',
+    unitValue: 1,
   })
   const [errors, setErrors] = useState({})
 
@@ -115,6 +117,12 @@ const AddInventory = () => {
     if (!formData.mrp || parseFloat(formData.mrp) < 1) {
       newErrors.mrp = 'MRP must be at least ₹1'
     }
+    if (!formData.unit || !formData.unit.trim()) {
+      newErrors.unit = 'Unit is required'
+    }
+    if (!formData.unitValue || parseFloat(formData.unitValue) <= 0) {
+      newErrors.unitValue = 'Unit value must be greater than 0'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -131,6 +139,8 @@ const AddInventory = () => {
         category: formData.category, // This should be category _id
         images: formData.images,
         mrp: parseFloat(formData.mrp),
+        unit: formData.unit.trim(),
+        unitValue: parseFloat(formData.unitValue),
       }
 
       const skuResponse = await createSKUAPI(payload)
@@ -146,6 +156,8 @@ const AddInventory = () => {
         brand: '',
         mrp: '',
         images: [],
+        unit: 'litre',
+        unitValue: 1,
       })
       setErrors({})
       setShowForm(false)
@@ -267,6 +279,36 @@ const AddInventory = () => {
                   required
                   placeholder="Enter MRP"
                 />
+                <Select
+                  label="Unit"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  errors={errors}
+                  required
+                  options={[
+                    { value: 'litre', label: 'Litre' },
+                    { value: 'kg', label: 'Kilogram' },
+                    { value: 'gram', label: 'Gram' },
+                    { value: 'piece', label: 'Piece' },
+                    { value: 'pack', label: 'Pack' },
+                    { value: 'box', label: 'Box' },
+                    { value: 'bottle', label: 'Bottle' },
+                    { value: 'packet', label: 'Packet' },
+                  ]}
+                />
+                <Input
+                  label="Unit Value"
+                  name="unitValue"
+                  type="number"
+                  value={formData.unitValue}
+                  onChange={handleChange}
+                  errors={errors}
+                  required
+                  min={0.01}
+                  step={0.01}
+                  placeholder="Enter unit value (e.g., 1, 0.5, 2.5)"
+                />
               </div>
               
               <div className="mt-4">
@@ -299,6 +341,8 @@ const AddInventory = () => {
                     brand: '',
                     mrp: '',
                     images: [],
+                    unit: 'litre',
+                    unitValue: 1,
                   })
                   setErrors({})
                   setShowForm(false)
@@ -805,6 +849,14 @@ const ViewInventoryModal = ({ inventory, onClose }) => {
               <p className="text-sm text-gray-800">₹{inventory?.sku?.mrp?.toLocaleString() || '0'}</p>
             </div>
             <div>
+              <label className="text-sm font-medium text-gray-600">Unit</label>
+              <p className="text-sm text-gray-800">{inventory?.sku?.unit || 'N/A'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">Unit Value</label>
+              <p className="text-sm text-gray-800">{inventory?.sku?.unitValue || 'N/A'}</p>
+            </div>
+            <div>
               <label className="text-sm font-medium text-gray-600">Created At</label>
               <p className="text-sm text-gray-800">
                 {inventory?.createdAt ? new Date(inventory.createdAt).toLocaleString() : 'N/A'}
@@ -1010,12 +1062,16 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
 
 // Update SKU Modal Component (keep for SKU updates)
 const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
+  // Handle both direct SKU data and nested SKU data
+  const skuData = inventory.sku || inventory
   const [formData, setFormData] = useState({
-    title: inventory.title || '',
-    brand: inventory.brand || '',
-    category: typeof inventory.category === 'object' ? inventory.category._id : inventory.category || '',
-    mrp: inventory.mrp || '',
-    images: inventory.images || [],
+    title: skuData.title || '',
+    brand: skuData.brand || '',
+    category: typeof skuData.category === 'object' ? skuData.category._id : skuData.category || '',
+    mrp: skuData.mrp || '',
+    images: skuData.images || [],
+    unit: skuData.unit || 'litre',
+    unitValue: skuData.unitValue || 1,
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -1050,6 +1106,12 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
     if (!formData.mrp || parseFloat(formData.mrp) < 1) {
       newErrors.mrp = 'MRP must be at least ₹1'
     }
+    if (!formData.unit || !formData.unit.trim()) {
+      newErrors.unit = 'Unit is required'
+    }
+    if (!formData.unitValue || parseFloat(formData.unitValue) <= 0) {
+      newErrors.unitValue = 'Unit value must be greater than 0'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -1060,13 +1122,16 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
 
     try {
       setLoading(true)
-      const skuId = inventory._id
+      // Get SKU ID - could be direct or nested
+      const skuId = inventory.sku?._id || inventory._id
       const payload = {
         title: formData.title.trim(),
         brand: formData.brand.trim(),
         category: formData.category,
         images: formData.images,
         mrp: parseFloat(formData.mrp),
+        unit: formData.unit.trim(),
+        unitValue: parseFloat(formData.unitValue),
       }
 
       await updateSKUAPI(skuId, payload)
@@ -1139,6 +1204,36 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
               errors={errors}
               required
               placeholder="Enter MRP"
+            />
+            <Select
+              label="Unit"
+              name="unit"
+              value={formData.unit}
+              onChange={handleChange}
+              errors={errors}
+              required
+              options={[
+                { value: 'litre', label: 'Litre' },
+                { value: 'kg', label: 'Kilogram' },
+                { value: 'gram', label: 'Gram' },
+                { value: 'piece', label: 'Piece' },
+                { value: 'pack', label: 'Pack' },
+                { value: 'box', label: 'Box' },
+                { value: 'bottle', label: 'Bottle' },
+                { value: 'packet', label: 'Packet' },
+              ]}
+            />
+            <Input
+              label="Unit Value"
+              name="unitValue"
+              type="number"
+              value={formData.unitValue}
+              onChange={handleChange}
+              errors={errors}
+              required
+              min={0.01}
+              step={0.01}
+              placeholder="Enter unit value (e.g., 1, 0.5, 2.5)"
             />
           </div>
           

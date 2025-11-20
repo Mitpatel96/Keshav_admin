@@ -1,5 +1,6 @@
-import { LogOut, Bell, User } from 'lucide-react'
+import { LogOut, User } from 'lucide-react'
 import { getUserData } from '../../utils/api'
+import NotificationBell from '../NotificationBell'
 
 const Header = ({ onLogout }) => {
   const userData = getUserData()
@@ -9,9 +10,7 @@ const Header = ({ onLogout }) => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold text-gray-800">Admin Panel</h2>
         <div className="flex items-center gap-3 flex-wrap sm:justify-end">
-          <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-            <Bell size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
               <User size={16} className="text-white" />

@@ -2,12 +2,18 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import { clearAuthData } from '../../utils/api'
+import { useSocket } from '../../contexts/SocketContext'
 
 const Layout = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { disconnectSocket } = useSocket()
 
   const handleLogout = () => {
+    // Disconnect socket before clearing auth data
+    if (disconnectSocket) {
+      disconnectSocket()
+    }
     clearAuthData()
     navigate('/login')
   }

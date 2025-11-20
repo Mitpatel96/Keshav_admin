@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Package,
   TrendingUp,
@@ -6,7 +6,8 @@ import {
   MapPin,
   AlertTriangle,
   Award,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react'
 import {
   LineChart,
@@ -22,10 +23,15 @@ import {
 } from 'recharts'
 import { formatCurrency } from '../utils/helpers'
 import Select from '../components/Form/Select'
+import { getProductSalesListAPI } from '../utils/api'
 
 const Dashboard = () => {
   const [salesFilter, setSalesFilter] = useState('last7days')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
+  const [productSalesData, setProductSalesData] = useState([])
+  const [productSalesSummary, setProductSalesSummary] = useState(null)
+  const [productSalesLoading, setProductSalesLoading] = useState(true)
+  const [productSalesError, setProductSalesError] = useState(null)
 
   // Mock data - in real app, fetch from API
   const dashboardData = {
@@ -47,12 +53,83 @@ const Dashboard = () => {
     { date: 'Sun', sales: 5500, orders: 33 },
   ]
 
-  const productSalesData = [
-    { name: 'iPhone 15 Pro', sku: 'SKU123', units: 45, revenue: 67500, percentage: 27.5 },
-    { name: 'Samsung Galaxy S24', sku: 'SKU124', units: 38, revenue: 57000, percentage: 23.3 },
-    { name: 'MacBook Air M2', sku: 'SKU125', units: 22, revenue: 26400, percentage: 10.8 },
-    { name: 'AirPods Pro', sku: 'SKU126', units: 65, revenue: 14950, percentage: 6.1 },
-  ]
+  // Fetch product sales data
+  useEffect(() => {
+    const fetchProductSales = async () => {
+      try {
+        setProductSalesLoading(true)
+        setProductSalesError(null)
+        console.log('🔄 Fetching product sales data...')
+        const response = await getProductSalesListAPI()
+        console.log('📦 Product sales API response:', response)
+        console.log('📦 Response type:', typeof response)
+        console.log('📦 Response keys:', response ? Object.keys(response) : 'null/undefined')
+        
+        // Handle response - check if it's the data object directly or wrapped
+        let data = response
+        
+        // If response is the data object directly (with success, data, summary)
+        if (response && typeof response === 'object') {
+          if (response.success !== undefined && response.data !== undefined) {
+            // This is the expected format
+            data = response
+          } else if (Array.isArray(response)) {
+            // If response is directly an array, wrap it
+            data = {
+              success: true,
+              data: response,
+              summary: null
+            }
+          }
+        }
+        
+        if (data && data.success && data.data && Array.isArray(data.data)) {
+          // Format data without percentage and skuId
+          const formattedData = data.data.map((item) => {
+            const { skuId, ...rest } = item
+            return rest
+          })
+          
+          console.log('✅ Formatted product sales data:', formattedData)
+          console.log('📊 Summary:', data.summary)
+          
+          setProductSalesData(formattedData)
+          setProductSalesSummary(data.summary)
+        } else {
+          console.warn('⚠️ Invalid response structure:', data)
+          console.warn('⚠️ Response structure check:', {
+            hasResponse: !!data,
+            hasSuccess: data?.success,
+            hasData: !!data?.data,
+            isArray: Array.isArray(data?.data),
+            dataType: typeof data,
+            dataValue: data
+          })
+          setProductSalesError('Invalid response format from API')
+          setProductSalesData([])
+        }
+      } catch (error) {
+        console.error('❌ Error fetching product sales:', error)
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          fullError: error
+        })
+        setProductSalesError(
+          error.response?.data?.message || 
+          error.message || 
+          'Failed to fetch product sales data'
+        )
+        setProductSalesData([])
+      } finally {
+        setProductSalesLoading(false)
+      }
+    }
+
+    fetchProductSales()
+  }, [])
 
   const bestPickupLocations = [
     { name: 'Satellite Road', city: 'Ahmedabad', orders: 450, revenue: 345000, rating: 95 },
@@ -168,31 +245,78 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Total Product Sales */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Total Product Sales</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Product</th>
-                  <th className="text-left py-2">SKU</th>
-                  <th className="text-right py-2">Units</th>
-                  <th className="text-right py-2">Revenue</th>
-                  <th className="text-right py-2">%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productSalesData.map((item, idx) => (
-                  <tr key={idx} className="border-b">
-                    <td className="py-2">{item.name}</td>
-                    <td className="py-2 text-gray-600">{item.sku}</td>
-                    <td className="py-2 text-right">{item.units}</td>
-                    <td className="py-2 text-right">{formatCurrency(item.revenue)}</td>
-                    <td className="py-2 text-right">{item.percentage}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Total Product Sales</h2>
+            {productSalesSummary && (
+              <div className="text-xs text-gray-500">
+                Total Sold: <span className="font-semibold text-gray-700">{productSalesSummary.totalStockSell}</span>
+              </div>
+            )}
           </div>
+          
+          {productSalesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="animate-spin text-primary-600" size={24} />
+              <span className="ml-2 text-gray-600">Loading product sales...</span>
+            </div>
+          ) : productSalesError ? (
+            <div className="text-center py-8 text-red-600">
+              <AlertTriangle className="mx-auto mb-2" size={24} />
+              <p>{productSalesError}</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Product</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">SKU</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Units</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">In Stock</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Stock Out</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Live Stock</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Sold</th>
+                    <th className="text-center py-2 px-2 whitespace-nowrap">Damage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productSalesData.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="text-center py-8 text-gray-500">
+                        No product sales data available
+                      </td>
+                    </tr>
+                  ) : (
+                    productSalesData.map((item, idx) => (
+                      <tr key={idx} className="border-b hover:bg-gray-50">
+                        <td className="py-2 px-2 text-center">{item.productName}</td>
+                        <td className="py-2 px-2 text-center text-gray-600">{item.skuName}</td>
+                        <td className="py-2 px-2 text-center">{item.totalInStock.toLocaleString()}</td>
+                        <td className="py-2 px-2 text-center">{item.inHouseStock.toLocaleString()}</td>
+                        <td className="py-2 px-2 text-center">{item.totalStockOut.toLocaleString()}</td>
+                        <td className="py-2 px-2 text-center">{item.liveStock.toLocaleString()}</td>
+                        <td className="py-2 px-2 text-center font-semibold">{item.stockSell}</td>
+                        <td className="py-2 px-2 text-center">{item.damage}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+                {productSalesSummary && productSalesData.length > 0 && (
+                  <tfoot>
+                    <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+                      <td className="py-2 px-2 text-center" colSpan="2">Total</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalInStock.toLocaleString()}</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalInHouseStock.toLocaleString()}</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalStockOut.toLocaleString()}</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalLiveStock.toLocaleString()}</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalStockSell.toLocaleString()}</td>
+                      <td className="py-2 px-2 text-center">{productSalesSummary.totalDamage.toLocaleString()}</td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Best Products */}

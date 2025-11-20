@@ -2,13 +2,46 @@
 
 import axios from 'axios'
 
-const API_BASE_URL = 'https://dev.api.keshavtraders.com.au/api'
+// Get API Base URL from environment variables
+// Priority:
+// 1. VITE_API_BASE_URL (if explicitly set)
+// 2. VITE_USE_LOCAL_API=true (uses localhost:8080/api)
+// 3. Default: Production URL
+const getApiBaseUrl = () => {
+  // Priority 1: Use VITE_API_BASE_URL if explicitly set
+  if (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.trim() !== '') {
+    const url = import.meta.env.VITE_API_BASE_URL.trim()
+    // Ensure it ends with /api
+    const apiUrl = url.endsWith('/api') ? url : url.endsWith('/') ? `${url}api` : `${url}/api`
+    console.log('🌐 Using VITE_API_BASE_URL:', apiUrl)
+    return apiUrl
+  }
+
+  // Priority 2: Check if local API should be used
+  const useLocalApi = import.meta.env.VITE_USE_LOCAL_API === 'true' || import.meta.env.VITE_USE_LOCAL_API === true
+
+  if (useLocalApi) {
+    console.log('🌐 Using LOCAL API: http://localhost:8080/api')
+    return 'http://localhost:8080/api'
+  }
+
+  // Priority 3: Default to production
+  const productionUrl = 'https://dev.api.keshavtraders.com.au/api'
+  console.log('🌐 Using PRODUCTION API:', productionUrl)
+  return productionUrl
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 // Create axios instance
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+  },
+  // Prevent caching for GET requests
+  validateStatus: function (status) {
+    return status >= 200 && status < 500 // Accept 304 as valid
   },
 })
 
@@ -336,6 +369,16 @@ export const getAllProductsAPI = async (page = 1, limit = 100) => {
         limit,
       },
     })
+    return response
+  } catch (error) {
+    throw error
+  }
+}
+
+// Get Product By ID API
+export const getProductByIdAPI = async (productId) => {
+  try {
+    const response = await axiosInstance.get(`/products/${productId}`)
     return response
   } catch (error) {
     throw error
@@ -675,6 +718,26 @@ export const generateBillAPI = async (orderId, cashAmount) => {
       cashAmount,
     })
     return response
+  } catch (error) {
+    throw error
+  }
+}
+
+// Dashboard APIs
+export const getProductSalesListAPI = async () => {
+  try {
+    const response = await axiosInstance.get('/dashboard/product-sales-list', {
+      // Prevent caching to avoid 304 responses with empty body
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      },
+      // Force fresh request
+      params: {
+        _t: Date.now() // Add timestamp to prevent caching
+      }
+    })
+    return response.data
   } catch (error) {
     throw error
   }

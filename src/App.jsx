@@ -24,6 +24,7 @@ import PartiallyRejectedOrders from './pages/PartiallyRejectedOrders'
 import WebsiteSections from './pages/WebsiteSections'
 import PromoManagement from './pages/PromoManagement'
 import { getUserData, getAuthToken } from './utils/api'
+import { SocketProvider } from './contexts/SocketContext'
 
 // Protected Route Component for Admin
 const ProtectedRoute = ({ children }) => {
@@ -77,53 +78,55 @@ const VendorProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Admin Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="inventory" element={<AddInventory />} />
-          <Route path="inventory/assign-vendor" element={<VendorAssignment />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="vendors" element={<VendorManagement />} />
-          <Route path="users" element={<AllUsers />} />
-          <Route path="damage-tickets" element={<DamageTickets />} />
-          <Route path="inventory-history" element={<InventoryHistory />} />
-          <Route path="partially-rejected-orders" element={<PartiallyRejectedOrders />} />
-          <Route path="website-sections" element={<WebsiteSections />} />
-          <Route path="promos" element={<PromoManagement />} />
-        </Route>
+    <SocketProvider>
+      <Router>
+        <Routes>
+          {/* Admin Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="inventory" element={<AddInventory />} />
+            <Route path="inventory/assign-vendor" element={<VendorAssignment />} />
+            <Route path="products" element={<ProductManagement />} />
+            <Route path="vendors" element={<VendorManagement />} />
+            <Route path="users" element={<AllUsers />} />
+            <Route path="damage-tickets" element={<DamageTickets />} />
+            <Route path="inventory-history" element={<InventoryHistory />} />
+            <Route path="partially-rejected-orders" element={<PartiallyRejectedOrders />} />
+            <Route path="website-sections" element={<WebsiteSections />} />
+            <Route path="promos" element={<PromoManagement />} />
+          </Route>
 
-        {/* Vendor Routes */}
-        <Route path="/vendor/login" element={<VendorLogin />} />
-        <Route
-          path="/vendor"
-          element={
-            <VendorProtectedRoute>
-              <VendorLayout />
-            </VendorProtectedRoute>
-          }
-        >
-          <Route index element={<VendorDashboard />} />
-          <Route path="inventory" element={<VendorInventory />} />
-          <Route path="delivery-confirmation" element={<VendorPendingTransfers />} />
-          <Route path="damage-ticket" element={<VendorDamageTicket />} />
-          <Route path="orders" element={<VendorOrders />} />
-          <Route path="order-confirmation" element={<VendorOrderConfirmation />} />
-          <Route path="walk-in-order" element={<VendorWalkInOrder />} />
-          <Route path="settings" element={<VendorSettings />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Vendor Routes */}
+          <Route path="/vendor/login" element={<VendorLogin />} />
+          <Route
+            path="/vendor"
+            element={
+              <VendorProtectedRoute>
+                <VendorLayout />
+              </VendorProtectedRoute>
+            }
+          >
+            <Route index element={<VendorDashboard />} />
+            <Route path="inventory" element={<VendorInventory />} />
+            <Route path="delivery-confirmation" element={<VendorPendingTransfers />} />
+            <Route path="damage-ticket" element={<VendorDamageTicket />} />
+            <Route path="orders" element={<VendorOrders />} />
+            <Route path="order-confirmation" element={<VendorOrderConfirmation />} />
+            <Route path="walk-in-order" element={<VendorWalkInOrder />} />
+            <Route path="settings" element={<VendorSettings />} />
+          </Route>
+        </Routes>
+      </Router>
+    </SocketProvider>
   )
 }
 
