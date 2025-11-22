@@ -9,7 +9,8 @@ import {
   CheckCircle,
   AlertTriangle,
   ClipboardCheck,
-  ShoppingCart
+  ShoppingCart,
+  Clock
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -24,6 +25,7 @@ const VendorSidebar = ({ currentPath }) => {
     { path: '/vendor/orders', icon: ShoppingBag, label: 'Orders' },
     { path: '/vendor/order-confirmation', icon: ClipboardCheck, label: 'Confirm Order' },
     { path: '/vendor/walk-in-order', icon: ShoppingCart, label: 'Walk-in Order' },
+    { path: '/vendor/warehouse-timings', icon: Clock, label: 'Warehouse Timings' },
     { path: '/vendor/settings', icon: Settings, label: 'Settings' },
   ]
 

@@ -780,3 +780,26 @@ export const deactivatePromoBatchAPI = async (batchId) => {
   }
 }
 
+// Warehouse Timings APIs
+export const getWarehouseTimingsAPI = async (vendorId, weekStartDate) => {
+  try {
+    const response = await axiosInstance.get(`/warehouse-timings/vendor/${vendorId}`, {
+      params: {
+        weekStartDate: weekStartDate
+      }
+    })
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+export const createWarehouseTimingsAPI = async (timingsData) => {
+  try {
+    const response = await axiosInstance.post('/warehouse-timings', timingsData)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+

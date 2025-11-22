@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Package,
   TrendingUp,
@@ -26,6 +27,7 @@ import Select from '../components/Form/Select'
 import { getProductSalesListAPI } from '../utils/api'
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const [salesFilter, setSalesFilter] = useState('last7days')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
   const [productSalesData, setProductSalesData] = useState([])
@@ -64,10 +66,10 @@ const Dashboard = () => {
         console.log('📦 Product sales API response:', response)
         console.log('📦 Response type:', typeof response)
         console.log('📦 Response keys:', response ? Object.keys(response) : 'null/undefined')
-        
+
         // Handle response - check if it's the data object directly or wrapped
         let data = response
-        
+
         // If response is the data object directly (with success, data, summary)
         if (response && typeof response === 'object') {
           if (response.success !== undefined && response.data !== undefined) {
@@ -82,17 +84,17 @@ const Dashboard = () => {
             }
           }
         }
-        
+
         if (data && data.success && data.data && Array.isArray(data.data)) {
           // Format data without percentage and skuId
           const formattedData = data.data.map((item) => {
             const { skuId, ...rest } = item
             return rest
           })
-          
+
           console.log('✅ Formatted product sales data:', formattedData)
           console.log('📊 Summary:', data.summary)
-          
+
           setProductSalesData(formattedData)
           setProductSalesSummary(data.summary)
         } else {
@@ -118,8 +120,8 @@ const Dashboard = () => {
           fullError: error
         })
         setProductSalesError(
-          error.response?.data?.message || 
-          error.message || 
+          error.response?.data?.message ||
+          error.message ||
           'Failed to fetch product sales data'
         )
         setProductSalesData([])
@@ -247,13 +249,23 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Total Product Sales</h2>
-            {productSalesSummary && (
-              <div className="text-xs text-gray-500">
-                Total Sold: <span className="font-semibold text-gray-700">{productSalesSummary.totalStockSell}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {productSalesSummary && (
+                <div className="text-xs text-gray-500">
+                  Total Sold: <span className="font-semibold text-gray-700">{productSalesSummary.totalStockSell}</span>
+                </div>
+              )}
+              {productSalesData.length > 3 && (
+                <button
+                  onClick={() => navigate('/sales-list')}
+                  className="text-sm text-primary-600 hover:text-primary-700 font-medium px-3 py-1 border border-primary-600 rounded hover:bg-primary-50 transition-colors"
+                >
+                  See All
+                </button>
+              )}
+            </div>
           </div>
-          
+
           {productSalesLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="animate-spin text-primary-600" size={24} />
@@ -287,7 +299,7 @@ const Dashboard = () => {
                       </td>
                     </tr>
                   ) : (
-                    productSalesData.map((item, idx) => (
+                    productSalesData.slice(0, 3).map((item, idx) => (
                       <tr key={idx} className="border-b hover:bg-gray-50">
                         <td className="py-2 px-2 text-center">{item.productName}</td>
                         <td className="py-2 px-2 text-center text-gray-600">{item.skuName}</td>
@@ -301,19 +313,6 @@ const Dashboard = () => {
                     ))
                   )}
                 </tbody>
-                {productSalesSummary && productSalesData.length > 0 && (
-                  <tfoot>
-                    <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                      <td className="py-2 px-2 text-center" colSpan="2">Total</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalInStock.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalInHouseStock.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalStockOut.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalLiveStock.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalStockSell.toLocaleString()}</td>
-                      <td className="py-2 px-2 text-center">{productSalesSummary.totalDamage.toLocaleString()}</td>
-                    </tr>
-                  </tfoot>
-                )}
               </table>
             </div>
           )}

@@ -18,11 +18,13 @@ import VendorDamageTicket from './pages/VendorDamageTicket'
 import VendorOrderConfirmation from './pages/VendorOrderConfirmation'
 import VendorWalkInOrder from './pages/VendorWalkInOrder'
 import VendorPendingTransfers from './pages/VendorPendingTransfers'
+import VendorWarehouseTimings from './pages/VendorWarehouseTimings'
 import DamageTickets from './pages/DamageTickets'
 import InventoryHistory from './pages/InventoryHistory'
 import PartiallyRejectedOrders from './pages/PartiallyRejectedOrders'
 import WebsiteSections from './pages/WebsiteSections'
 import PromoManagement from './pages/PromoManagement'
+import SalesList from './pages/SalesList'
 import { getUserData, getAuthToken } from './utils/api'
 import { SocketProvider } from './contexts/SocketContext'
 
@@ -103,6 +105,7 @@ function App() {
             <Route path="partially-rejected-orders" element={<PartiallyRejectedOrders />} />
             <Route path="website-sections" element={<WebsiteSections />} />
             <Route path="promos" element={<PromoManagement />} />
+            <Route path="sales-list" element={<SalesList />} />
           </Route>
 
           {/* Vendor Routes */}
@@ -122,6 +125,7 @@ function App() {
             <Route path="orders" element={<VendorOrders />} />
             <Route path="order-confirmation" element={<VendorOrderConfirmation />} />
             <Route path="walk-in-order" element={<VendorWalkInOrder />} />
+            <Route path="warehouse-timings" element={<VendorWarehouseTimings />} />
             <Route path="settings" element={<VendorSettings />} />
           </Route>
         </Routes>
