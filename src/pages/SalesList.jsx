@@ -195,8 +195,8 @@ const SalesList = () => {
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}
                                             className={`px-4 py-2 rounded-lg border ${currentPage === 1
-                                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 hover:bg-gray-50'
                                                 }`}
                                         >
                                             <ChevronLeft size={20} />
@@ -222,8 +222,8 @@ const SalesList = () => {
                                                             key={p}
                                                             onClick={() => handlePageChange(p)}
                                                             className={`px-4 py-2 rounded-lg border ${p === currentPage
-                                                                    ? 'bg-primary-600 text-white border-primary-600'
-                                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                                ? 'bg-primary-600 text-white border-primary-600'
+                                                                : 'border-gray-300 hover:bg-gray-50'
                                                                 }`}
                                                         >
                                                             {p}
@@ -235,8 +235,8 @@ const SalesList = () => {
                                             onClick={() => handlePageChange(currentPage + 1)}
                                             disabled={currentPage === totalPages}
                                             className={`px-4 py-2 rounded-lg border ${currentPage === totalPages
-                                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 hover:bg-gray-50'
                                                 }`}
                                         >
                                             <ChevronRight size={20} />

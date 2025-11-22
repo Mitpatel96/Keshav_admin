@@ -4,7 +4,7 @@ import { Plus, Search, Edit, Trash2, Package, Filter, Loader2, Eye, Truck, X } f
 import Input from '../components/Form/Input'
 import Select from '../components/Form/Select'
 import FileUpload from '../components/Form/FileUpload'
-import { getAllCategoriesAPI, createSKUAPI, getAllSKUsAPI, updateSKUAPI, createInventoryAPI, getAllInventoryAPI, getInventoryByIdAPI, updateInventoryAPI, getAllVendorsAPI, transferInventoryToVendorAPI } from '../utils/api'
+import { getAllCategoriesAPI, createCategoryAPI, createSKUAPI, getAllSKUsAPI, updateSKUAPI, createInventoryAPI, getAllInventoryAPI, getInventoryByIdAPI, updateInventoryAPI, getAllVendorsAPI, transferInventoryToVendorAPI } from '../utils/api'
 
 const AddInventory = () => {
   const navigate = useNavigate()
@@ -19,6 +19,13 @@ const AddInventory = () => {
   const [showStockModal, setShowStockModal] = useState(null)
   const [showViewModal, setShowViewModal] = useState(null)
   const [showTransferModal, setShowTransferModal] = useState(null)
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: '',
+    description: '',
+  })
+  const [categoryFormErrors, setCategoryFormErrors] = useState({})
+  const [categorySubmitLoading, setCategorySubmitLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -83,7 +90,7 @@ const AddInventory = () => {
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
@@ -144,12 +151,12 @@ const AddInventory = () => {
       }
 
       const skuResponse = await createSKUAPI(payload)
-      
+
       // After SKU creation, show modal to add stock
       if (skuResponse?._id) {
         setShowStockModal(skuResponse)
       }
-      
+
       setFormData({
         title: '',
         category: '',
@@ -189,6 +196,65 @@ const AddInventory = () => {
     setShowUpdateModal(item)
   }
 
+  const handleCategoryFormChange = (e) => {
+    const { name, value } = e.target
+    setCategoryFormData((prev) => ({ ...prev, [name]: value }))
+    if (categoryFormErrors[name]) {
+      setCategoryFormErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const validateCategoryForm = () => {
+    const newErrors = {}
+    if (!categoryFormData.name.trim()) {
+      newErrors.name = 'Category name is required'
+    } else if (categoryFormData.name.length < 2) {
+      newErrors.name = 'Category name must be at least 2 characters'
+    }
+    if (!categoryFormData.description.trim()) {
+      newErrors.description = 'Description is required'
+    } else if (categoryFormData.description.length < 5) {
+      newErrors.description = 'Description must be at least 5 characters'
+    }
+    setCategoryFormErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault()
+    if (!validateCategoryForm()) return
+
+    try {
+      setCategorySubmitLoading(true)
+      const payload = {
+        name: categoryFormData.name.trim(),
+        description: categoryFormData.description.trim(),
+      }
+
+      const response = await createCategoryAPI(payload)
+
+      // Handle response - could be response.data or response directly
+      const categoryData = response?.data || response
+
+      if (categoryData?._id) {
+        // Refresh categories list
+        await fetchCategories()
+        // Select the newly created category
+        setFormData((prev) => ({ ...prev, category: categoryData._id }))
+        // Close modal and reset form
+        setShowAddCategoryModal(false)
+        setCategoryFormData({ name: '', description: '' })
+        setCategoryFormErrors({})
+      }
+    } catch (error) {
+      setCategoryFormErrors({
+        submit: error.response?.data?.message || error.message || 'Failed to create category. Please try again.'
+      })
+    } finally {
+      setCategorySubmitLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -214,7 +280,7 @@ const AddInventory = () => {
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-semibold mb-6">Add New Inventory</h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Step 1: Select Category */}
             <div className="border-b pb-6">
@@ -226,18 +292,31 @@ const AddInventory = () => {
                     Loading categories...
                   </div>
                 ) : (
-                  <Select
-                    label="Category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    errors={errors}
-                    required
-                    options={categories.map(cat => ({
-                      value: cat._id,
-                      label: cat.name,
-                    }))}
-                  />
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Select
+                        label="Category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        errors={errors}
+                        required
+                        options={categories.map(cat => ({
+                          value: cat._id,
+                          label: cat.name,
+                        }))}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCategoryModal(true)}
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                      title="Add New Category"
+                    >
+                      <Plus size={18} />
+                      Add
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -310,7 +389,7 @@ const AddInventory = () => {
                   placeholder="Enter unit value (e.g., 1, 0.5, 2.5)"
                 />
               </div>
-              
+
               <div className="mt-4">
                 <FileUpload
                   label="Product Images"
@@ -405,8 +484,8 @@ const AddInventory = () => {
                       status === 'confirmed'
                         ? 'bg-green-50 text-green-700 ring-1 ring-green-100'
                         : status === 'rejected'
-                        ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
-                        : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
+                          ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                          : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
 
                     return (
                       <tr key={item._id} className="hover:bg-gray-50/70 transition-colors">
@@ -428,11 +507,10 @@ const AddInventory = () => {
                         </td>
                         <td className="px-5 py-4 text-center align-top">
                           <span
-                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
-                              isLowStock
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${isLowStock
                                 ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
                                 : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'
-                            }`}
+                              }`}
                           >
                             {quantity}
                             {isLowStock && <span className="ml-1 text-[10px] tracking-wide">Low</span>}
@@ -485,8 +563,8 @@ const AddInventory = () => {
                     status === 'confirmed'
                       ? 'bg-green-50 text-green-700 ring-1 ring-green-100'
                       : status === 'rejected'
-                      ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
-                      : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
+                        ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
+                        : 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-100'
 
                   return (
                     <div key={item._id} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -520,11 +598,10 @@ const AddInventory = () => {
                         <div>
                           <p className="text-xs uppercase tracking-wide text-gray-400">Quantity</p>
                           <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                              isLowStock
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${isLowStock
                                 ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
                                 : 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'
-                            }`}
+                              }`}
                           >
                             {quantity}
                             {isLowStock && <span className="ml-1 text-[10px] uppercase tracking-wide">Low</span>}
@@ -604,6 +681,88 @@ const AddInventory = () => {
             fetchInventory()
           }}
         />
+      )}
+
+      {/* Add Category Modal */}
+      {showAddCategoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Add New Category</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddCategoryModal(false)
+                  setCategoryFormData({ name: '', description: '' })
+                  setCategoryFormErrors({})
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateCategory} className="p-6 space-y-4">
+              {categoryFormErrors.submit && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                  {categoryFormErrors.submit}
+                </div>
+              )}
+              <Input
+                label="Category Name"
+                name="name"
+                value={categoryFormData.name}
+                onChange={handleCategoryFormChange}
+                errors={categoryFormErrors}
+                required
+                placeholder="Enter category name"
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="description"
+                  value={categoryFormData.description}
+                  onChange={handleCategoryFormChange}
+                  rows={4}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${categoryFormErrors.description ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  placeholder="Enter category description"
+                />
+                {categoryFormErrors.description && (
+                  <p className="mt-1 text-sm text-red-600">{categoryFormErrors.description}</p>
+                )}
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={categorySubmitLoading}
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {categorySubmitLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 size={18} className="animate-spin" />
+                      Creating...
+                    </span>
+                  ) : (
+                    'Create Category'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddCategoryModal(false)
+                    setCategoryFormData({ name: '', description: '' })
+                    setCategoryFormErrors({})
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -817,9 +976,8 @@ const ViewInventoryModal = ({ inventory, onClose }) => {
             <div>
               <label className="text-sm font-medium text-gray-600">Status</label>
               <p className="text-sm text-gray-800">
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  inventory?.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs ${inventory?.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
                   {inventory?.status || 'N/A'}
                 </span>
               </p>
@@ -937,14 +1095,14 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
     try {
       setLoading(true)
       setError('')
-      
+
       const skuId = inventory.sku?._id || inventory.sku
       if (!skuId) {
         setError('SKU ID not found for this inventory item')
         setLoading(false)
         return
       }
-      
+
       const response = await transferInventoryToVendorAPI({
         vendorId: selectedVendor,
         transfers: [
@@ -954,7 +1112,7 @@ const TransferInventoryModal = ({ inventory, onClose }) => {
           },
         ],
       })
-      
+
       // Handle response with results
       if (response?.results && response.results.length > 0) {
         const successCount = response.results.filter(r => r.status === 'success').length
@@ -1156,7 +1314,7 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
             ×
           </button>
         </div>
-        
+
         {errors.submit && (
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {errors.submit}
@@ -1236,7 +1394,7 @@ const UpdateInventoryModal = ({ inventory, categories, onClose, onUpdate }) => {
               placeholder="Enter unit value (e.g., 1, 0.5, 2.5)"
             />
           </div>
-          
+
           <div className="mt-4">
             <FileUpload
               label="Product Images"
